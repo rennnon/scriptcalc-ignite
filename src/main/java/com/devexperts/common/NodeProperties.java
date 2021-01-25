@@ -9,7 +9,10 @@ public class NodeProperties {
     private boolean clientMode;
     @Value("${ADDRESSES}")
     private String addresses;
-
+    @Value("${COMMUNICATION_PORT}")
+    private int communicationPort;
+    @Value("${COMMUNICATION_PORT_RANGE}")
+    private int communicationPortRange;
 
     public boolean isPeerClassLoadingEnabled() {
         return peerClassLoadingEnabled;
@@ -21,5 +24,13 @@ public class NodeProperties {
 
     public String getAddresses() {
         return addresses;
+    }
+
+    public int getCommunicationPort() {
+        return communicationPort;
+    }
+
+    public int getCommunicationPortRange() {
+        return communicationPortRange;
     }
 }

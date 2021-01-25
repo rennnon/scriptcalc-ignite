@@ -3,6 +3,7 @@ package com.devexperts.common;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteSpringBean;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.spi.communication.tcp.TcpCommunicationSpi;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -33,6 +34,10 @@ public class IgniteConfig {
         TcpDiscoveryMulticastIpFinder ipFinder = new TcpDiscoveryMulticastIpFinder();
         ipFinder.setAddresses(Collections.singletonList(properties.getAddresses()));
         cfg.setDiscoverySpi(new TcpDiscoverySpi().setIpFinder(ipFinder));
+        TcpCommunicationSpi communicationSpi = new TcpCommunicationSpi();
+        communicationSpi.setLocalPort(properties.getCommunicationPort());
+        communicationSpi.setLocalPortRange(properties.getCommunicationPortRange());
+        cfg.setCommunicationSpi(communicationSpi);
         return cfg;
     }
 
