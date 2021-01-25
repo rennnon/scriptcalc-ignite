@@ -13,6 +13,8 @@ public class NodeProperties {
     private int communicationPort;
     @Value("${COMMUNICATION_PORT_RANGE}")
     private int communicationPortRange;
+    @Value("${LOG4J2_CONFIG_PATH}")
+    private String log4j2ConfigPath;
 
     public boolean isPeerClassLoadingEnabled() {
         return peerClassLoadingEnabled;
@@ -32,5 +34,9 @@ public class NodeProperties {
 
     public int getCommunicationPortRange() {
         return communicationPortRange;
+    }
+
+    public String getLog4j2ConfigPath() {
+        return log4j2ConfigPath;
     }
 }

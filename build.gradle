@@ -23,6 +23,11 @@ dependencies {
     api("org.apache.ignite:ignite-core:2.9.0")
     api("org.apache.ignite:ignite-spring:2.9.0")
     api("org.apache.ignite:ignite-log4j2:2.9.0")
+
+    //Log4j
+    runtimeOnly ("com.lmax:disruptor:3.4.2")
+    runtimeOnly ("org.apache.logging.log4j:log4j-api:2.13.3")
+    runtimeOnly ("org.apache.logging.log4j:log4j-core:2.13.3")
 }
 
 test {
