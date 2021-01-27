@@ -1,15 +1,15 @@
 package com.devexperts.client;
 
+import com.devexperts.common.Cache;
 import com.devexperts.common.Utils;
 import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
-import org.apache.ignite.cache.query.Query;
+import org.apache.ignite.cache.query.FieldsQueryCursor;
+import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 
 import java.time.Instant;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.List;
 
 /**
  * A compute tasks that prints out a node ID and some details about its OS and JRE.
@@ -23,14 +23,29 @@ class CalculationTask implements IgniteRunnable {
     public void run() {
         System.out.println("Start calculation task");
         Utils.printNodeStats(ignite, System.out);
-        IgniteCache<String, Long> cache = ignite.cache("dpoCache");
-        String heartbeats = StreamSupport.stream(cache.spliterator(), false)
-                .map(entry -> {
-                    String time = Instant.ofEpochMilli(entry.getValue()).toString();
-                    return "Server \"" + entry.getKey() + "\": " + time;
-                })
-                .collect(Collectors.joining("\n", "Last heartbeats:\n", "\n"));
-        System.out.println(heartbeats);
+        printAllHeartbeats(Cache.LOCAL, true);
+        System.out.println("---");
+        printAllHeartbeats(Cache.LOCAL, false);
+        System.out.println("---");
+        printAllHeartbeats(Cache.DISTRIBUTED, true);
+        System.out.println("---");
+        printAllHeartbeats(Cache.DISTRIBUTED, false);
         System.out.println("Finish calculation task");
+    }
+
+    private void printAllHeartbeats(Cache cache, boolean localQuery) {
+        SqlFieldsQuery query = new SqlFieldsQuery("select sourceId, timeMillis, message from Heartbeat");
+        query.setLocal(localQuery);
+        try (FieldsQueryCursor<List<?>> cursor = cache.get(ignite).query(query)) {
+            StringBuilder builder = new StringBuilder(cache.name());
+            builder.append(localQuery ? " local query\n" : " global query\n");
+            for (List<?> row : cursor) {
+                builder.append("\tsrc: ").append(row.get(0)).append(", ");
+                String time = Instant.ofEpochMilli((Long) row.get(1)).toString();
+                builder.append("time: ").append(time).append(", ");
+                builder.append("msg: \"").append(row.get(2)).append("\"\n");
+            }
+            System.out.println(builder.toString());
+        }
     }
 }

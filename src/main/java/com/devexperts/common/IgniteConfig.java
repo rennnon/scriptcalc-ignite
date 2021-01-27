@@ -4,6 +4,9 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteLogger;
 import org.apache.ignite.IgniteSpringBean;
+import org.apache.ignite.configuration.DataPageEvictionMode;
+import org.apache.ignite.configuration.DataRegionConfiguration;
+import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.logger.log4j2.Log4J2Logger;
 import org.apache.ignite.spi.communication.tcp.TcpCommunicationSpi;
@@ -17,6 +20,11 @@ import java.util.Collections;
 
 @Configuration
 public class IgniteConfig {
+
+    public static final String DATA_REGION_WITH_EVICTION_NAME = "40MB_Region_Eviction";
+    private static final int DATA_REGION_WITH_EVICTION_INITIAL_SIZE = 20 * 1024 * 1024;
+    private static final int DATA_REGION_WITH_EVICTION_MAX_SIZE = 40 * 1024 * 1024;
+
     @Bean
     public NodeProperties nodeProperties() {
         return new NodeProperties();
@@ -32,17 +40,34 @@ public class IgniteConfig {
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public IgniteConfiguration nodeConfiguration(NodeProperties properties) {
+        // general setting
         IgniteConfiguration cfg = new IgniteConfiguration();
         cfg.setClientMode(properties.isClientMode());
         cfg.setPeerClassLoadingEnabled(properties.isPeerClassLoadingEnabled());
+        cfg.setGridLogger(igniteLogger(properties));
+
+        // discovery
         TcpDiscoveryMulticastIpFinder ipFinder = new TcpDiscoveryMulticastIpFinder();
         ipFinder.setAddresses(Collections.singletonList(properties.getAddresses()));
         cfg.setDiscoverySpi(new TcpDiscoverySpi().setIpFinder(ipFinder));
+
+        // communication
         TcpCommunicationSpi communicationSpi = new TcpCommunicationSpi();
         communicationSpi.setLocalPort(properties.getCommunicationPort());
         communicationSpi.setLocalPortRange(properties.getCommunicationPortRange());
         cfg.setCommunicationSpi(communicationSpi);
-        cfg.setGridLogger(igniteLogger(properties));
+
+        // data regions
+        DataStorageConfiguration storageCfg = new DataStorageConfiguration();
+        // 40MB memory region with eviction enabled.
+        DataRegionConfiguration regionWithEviction = new DataRegionConfiguration();
+        regionWithEviction.setName(DATA_REGION_WITH_EVICTION_NAME);
+        regionWithEviction.setInitialSize(DATA_REGION_WITH_EVICTION_INITIAL_SIZE);
+        regionWithEviction.setMaxSize(DATA_REGION_WITH_EVICTION_MAX_SIZE);
+        regionWithEviction.setPageEvictionMode(DataPageEvictionMode.RANDOM_2_LRU);
+        storageCfg.setDataRegionConfigurations(regionWithEviction);
+        cfg.setDataStorageConfiguration(storageCfg);
+
         return cfg;
     }
 
