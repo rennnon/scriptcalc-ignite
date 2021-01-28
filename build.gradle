@@ -20,9 +20,9 @@ dependencies {
     api ("org.springframework:spring-core:4.3.29.RELEASE")
 
     // Apache Ignite
-    api("org.apache.ignite:ignite-core:2.9.0")
-    api("org.apache.ignite:ignite-spring:2.9.0")
-    api("org.apache.ignite:ignite-log4j2:2.9.0")
+    api("org.apache.ignite:ignite-core:2.9.1")
+    api("org.apache.ignite:ignite-spring:2.9.1")
+    api("org.apache.ignite:ignite-log4j2:2.9.1")
 
     //Log4j
     runtimeOnly ("com.lmax:disruptor:3.4.2")
