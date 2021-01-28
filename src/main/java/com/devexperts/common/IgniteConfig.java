@@ -83,7 +83,8 @@ public class IgniteConfig {
     @Configuration
     @Profile("server")
     @PropertySources({
-            @PropertySource("classpath:server.properties")
+            @PropertySource("classpath:server.properties"),
+            @PropertySource("classpath:common.properties")
     })
     static class LocalServerConfig {
     }
@@ -91,7 +92,8 @@ public class IgniteConfig {
     @Configuration
     @Profile("client")
     @PropertySources({
-            @PropertySource("classpath:client.properties")
+            @PropertySource("classpath:client.properties"),
+            @PropertySource("classpath:common.properties")
     })
     static class LocalClientConfig {
     }
