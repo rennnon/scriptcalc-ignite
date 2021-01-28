@@ -23,11 +23,9 @@ public class ClientProducerSpring {
         Utils.printNodeStats(ignite, System.out);
         String clientId = UUID.randomUUID().toString();
         IgniteCache<String, Heartbeat> distributedCache = Cache.DISTRIBUTED.get(ignite);
-        IgniteCache<String, Heartbeat> localCache = Cache.LOCAL.get(ignite);
 
         while (true) {
             long timeMillis = System.currentTimeMillis();
-            localCache.put(clientId, new Heartbeat(clientId, timeMillis, "local"));
             distributedCache.put(clientId, new Heartbeat(clientId, timeMillis, "distributed"));
             System.out.println("Heartbeat is sent");
             try {

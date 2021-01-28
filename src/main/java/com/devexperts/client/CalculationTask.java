@@ -23,16 +23,13 @@ class CalculationTask implements IgniteRunnable {
     public void run() {
         System.out.println("Start calculation task");
         Utils.printNodeStats(ignite, System.out);
-        printAllHeartbeats(Cache.LOCAL, true);
-        System.out.println("---");
-        printAllHeartbeats(Cache.LOCAL, false);
-        System.out.println("---");
         printAllHeartbeats(Cache.DISTRIBUTED, true);
         System.out.println("---");
         printAllHeartbeats(Cache.DISTRIBUTED, false);
         System.out.println("Finish calculation task");
     }
 
+    @SuppressWarnings("SameParameterValue") // it's nice to have an ability to pass Cache.LOCAL here
     private void printAllHeartbeats(Cache cache, boolean localQuery) {
         SqlFieldsQuery query = new SqlFieldsQuery("select sourceId, timeMillis, message from Heartbeat");
         query.setLocal(localQuery);

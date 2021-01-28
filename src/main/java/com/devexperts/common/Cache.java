@@ -9,6 +9,7 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public enum Cache {
+    @SuppressWarnings("unused")
     LOCAL("LOCALCACHE", true),
     DISTRIBUTED("DISTRIBUTEDCACHE", false);
 
