@@ -1,15 +1,20 @@
 package com.devexperts.server;
 
+import com.devexperts.common.Cache;
+import com.devexperts.common.Heartbeat;
 import com.devexperts.common.IgniteConfig;
 import com.devexperts.common.Utils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteEvents;
 import org.apache.ignite.IgniteException;
+import org.apache.ignite.cache.query.ContinuousQuery;
 import org.apache.ignite.events.CacheEvent;
 import org.apache.ignite.events.Event;
 import org.apache.ignite.events.EventType;
 import org.apache.ignite.lang.IgnitePredicate;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import javax.cache.event.CacheEntryEvent;
 
 public class ServerSpring {
 
@@ -22,6 +27,16 @@ public class ServerSpring {
         Utils.printNodeStats(ignite, System.out);
 
         setupEventListeners(ignite);
+        setupDistributedCacheListener(ignite);
+    }
+
+    private static void setupDistributedCacheListener(Ignite ignite) {
+        ContinuousQuery<String, Heartbeat> query = new ContinuousQuery<>();
+        query.setLocalListener(events -> {
+            for (CacheEntryEvent<? extends String, ? extends Heartbeat> event : events)
+                System.out.println("Cache change: " + event);
+        });
+        Cache.DISTRIBUTED.get(ignite).query(query);
     }
 
     private static void setupEventListeners(Ignite ignite) {
