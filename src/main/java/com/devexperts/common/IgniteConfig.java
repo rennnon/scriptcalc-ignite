@@ -8,6 +8,7 @@ import org.apache.ignite.configuration.DataPageEvictionMode;
 import org.apache.ignite.configuration.DataRegionConfiguration;
 import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.events.EventType;
 import org.apache.ignite.logger.log4j2.Log4J2Logger;
 import org.apache.ignite.spi.communication.tcp.TcpCommunicationSpi;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
@@ -67,6 +68,13 @@ public class IgniteConfig {
         regionWithEviction.setPageEvictionMode(DataPageEvictionMode.RANDOM_2_LRU);
         storageCfg.setDataRegionConfigurations(regionWithEviction);
         cfg.setDataStorageConfiguration(storageCfg);
+
+        // events
+        cfg.setIncludeEventTypes(EventType.EVT_CACHE_OBJECT_PUT, EventType.EVT_CACHE_OBJECT_REMOVED,
+                EventType.EVT_NODE_JOINED, EventType.EVT_NODE_LEFT,
+                EventType.EVT_CACHE_REBALANCE_PART_SUPPLIED, EventType.EVT_CACHE_REBALANCE_PART_UNLOADED,
+                EventType.EVT_CACHE_REBALANCE_PART_LOADED);
+
 
         return cfg;
     }
