@@ -1,6 +1,6 @@
 package com.devexperts.client;
 
-import com.devexperts.common.Cache;
+import com.devexperts.common.CacheInfo;
 import com.devexperts.common.Heartbeat;
 import com.devexperts.common.IgniteConfig;
 import com.devexperts.common.Utils;
@@ -26,7 +26,7 @@ public class ClientProducerSpring {
         Ignite ignite = context.getBean(Ignite.class);
         Utils.printNodeStats(ignite, System.out);
         int clientId = UUID.randomUUID().toString().hashCode();
-        IgniteCache<String, Heartbeat> distributedCache = Cache.DISTRIBUTED.get(ignite);
+        IgniteCache<String, Heartbeat> distributedCache = CacheInfo.DISTRIBUTED.get(ignite);
 
         int i = 0;
         Random random = new Random();

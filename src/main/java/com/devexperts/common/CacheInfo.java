@@ -9,7 +9,7 @@ import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-public enum Cache {
+public enum CacheInfo {
     @SuppressWarnings("unused")
     LOCAL("LOCALCACHE", true),
     DISTRIBUTED("DISTRIBUTEDCACHE", false);
@@ -17,7 +17,7 @@ public enum Cache {
     private final CacheConfiguration<String, Heartbeat> config;
     private final String name;
 
-    Cache(String name, boolean local) {
+    CacheInfo(String name, boolean local) {
         this.name = name;
         config = new CacheConfiguration<>(name);
         if (local) {

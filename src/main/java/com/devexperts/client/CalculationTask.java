@@ -1,6 +1,6 @@
 package com.devexperts.client;
 
-import com.devexperts.common.Cache;
+import com.devexperts.common.CacheInfo;
 import com.devexperts.common.Utils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.cache.query.FieldsQueryCursor;
@@ -23,14 +23,14 @@ class CalculationTask implements IgniteRunnable {
     public void run() {
         System.out.println("Start calculation task");
         Utils.printNodeStats(ignite, System.out);
-        printAllHeartbeats(Cache.DISTRIBUTED, true);
+        printAllHeartbeats(CacheInfo.DISTRIBUTED, true);
         System.out.println("---");
-        printAllHeartbeats(Cache.DISTRIBUTED, false);
+        printAllHeartbeats(CacheInfo.DISTRIBUTED, false);
         System.out.println("Finish calculation task");
     }
 
     @SuppressWarnings("SameParameterValue") // it's nice to have an ability to pass Cache.LOCAL here
-    private void printAllHeartbeats(Cache cache, boolean localQuery) {
+    private void printAllHeartbeats(CacheInfo cache, boolean localQuery) {
         SqlFieldsQuery query = new SqlFieldsQuery("select sourceId, timeMillis, message from Heartbeat");
         query.setLocal(localQuery);
         try (FieldsQueryCursor<List<?>> cursor = cache.get(ignite).query(query)) {

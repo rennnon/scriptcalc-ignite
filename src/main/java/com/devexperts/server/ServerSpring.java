@@ -1,6 +1,6 @@
 package com.devexperts.server;
 
-import com.devexperts.common.Cache;
+import com.devexperts.common.CacheInfo;
 import com.devexperts.common.IgniteConfig;
 import com.devexperts.common.Utils;
 import org.apache.ignite.Ignite;
@@ -26,7 +26,7 @@ public class ServerSpring {
         Utils.printNodeStats(ignite, System.out);
 
         setupEventListeners(ignite);
-        CacheLocalKeysTracker tracker = CacheLocalKeysTracker.start(ignite, Cache.DISTRIBUTED);
+        CacheLocalKeysTracker tracker = CacheLocalKeysTracker.start(ignite, CacheInfo.DISTRIBUTED);
         Timer localKeysCheck = new Timer("localKeysCheck");
         localKeysCheck.scheduleAtFixedRate(new TimerTask() {
             @Override
