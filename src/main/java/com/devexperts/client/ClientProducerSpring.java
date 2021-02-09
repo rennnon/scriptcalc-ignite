@@ -9,10 +9,13 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class ClientProducerSpring {
     private static final int HEARTBEAT_RATE_MILLIS = 5000;
+    private static final List<String> keys = Arrays.asList("foo", "bar", "zip", "zap");
 
     @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
     public static void main(String[] args) throws IgniteException {
@@ -21,12 +24,15 @@ public class ClientProducerSpring {
                 new AnnotationConfigApplicationContext(IgniteConfig.class);
         Ignite ignite = context.getBean(Ignite.class);
         Utils.printNodeStats(ignite, System.out);
-        String clientId = UUID.randomUUID().toString();
+        int clientId = UUID.randomUUID().toString().hashCode();
         IgniteCache<String, Heartbeat> distributedCache = Cache.DISTRIBUTED.get(ignite);
 
+        int i = 0;
         while (true) {
             long timeMillis = System.currentTimeMillis();
-            distributedCache.put(clientId, new Heartbeat(clientId, timeMillis, "distributed"));
+            String key = keys.get(i % keys.size()) + "_" + clientId;
+            distributedCache.put(key, new Heartbeat(key, timeMillis, "distributed"));
+            i++;
             System.out.println("Heartbeat is sent");
             try {
                 Thread.sleep(HEARTBEAT_RATE_MILLIS);
