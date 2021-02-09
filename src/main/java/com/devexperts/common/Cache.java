@@ -4,6 +4,7 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
+import org.apache.ignite.cache.affinity.Affinity;
 import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -14,8 +15,10 @@ public enum Cache {
     DISTRIBUTED("DISTRIBUTEDCACHE", false);
 
     private final CacheConfiguration<String, Heartbeat> config;
+    private final String name;
 
     Cache(String name, boolean local) {
+        this.name = name;
         config = new CacheConfiguration<>(name);
         if (local) {
             config
@@ -24,7 +27,7 @@ public enum Cache {
         } else {
             config
                     .setCacheMode(CacheMode.PARTITIONED)
-                    .setBackups(1)
+                    .setBackups(0)
                     .setAffinity(new RendezvousAffinityFunction(false));
         }
         config
@@ -34,5 +37,16 @@ public enum Cache {
 
     public IgniteCache<String, Heartbeat> get(@NotNull Ignite ignite) {
         return ignite.getOrCreateCache(config);
+    }
+
+    public Affinity<String> getAffinity(@NotNull Ignite ignite) {
+        return ignite.affinity(name);
+    }
+
+    @Override
+    public String toString() {
+        return "Cache{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }
