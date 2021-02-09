@@ -11,6 +11,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class ClientProducerSpring {
@@ -28,12 +29,19 @@ public class ClientProducerSpring {
         IgniteCache<String, Heartbeat> distributedCache = Cache.DISTRIBUTED.get(ignite);
 
         int i = 0;
+        Random random = new Random();
         while (true) {
             long timeMillis = System.currentTimeMillis();
             String key = keys.get(i % keys.size()) + "_" + clientId;
-            distributedCache.put(key, new Heartbeat(key, timeMillis, "distributed"));
+            boolean insert = random.nextBoolean();
+            if (insert) {
+                distributedCache.put(key, new Heartbeat(key, timeMillis, "distributed"));
+                System.out.println("Heartbeat is added");
+            } else {
+                distributedCache.remove(key);
+                System.out.println("Hearbeat is removed");
+            }
             i++;
-            System.out.println("Heartbeat is sent");
             try {
                 Thread.sleep(HEARTBEAT_RATE_MILLIS);
             } catch (InterruptedException e) {
