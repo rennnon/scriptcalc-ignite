@@ -5,13 +5,12 @@ import com.devexperts.common.Heartbeat;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.cache.affinity.Affinity;
 import org.apache.ignite.cache.query.ContinuousQuery;
+import org.apache.ignite.cluster.ClusterNode;
 
 import javax.cache.event.CacheEntryEvent;
 import javax.cache.event.EventType;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class CacheLocalKeysTracker {
     private final Ignite ignite;
@@ -33,6 +32,13 @@ public class CacheLocalKeysTracker {
         CacheLocalKeysTracker tracker = new CacheLocalKeysTracker(ignite, cache);
         tracker.startCacheListener();
         return tracker;
+    }
+
+    public synchronized Set<String> getLocalKeysSnapshot() {
+        return getLocalPartitions().stream()
+                .map(partition -> keysMapping.getOrDefault(partition, Collections.emptySet()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
 
     private void startCacheListener() {
@@ -67,5 +73,11 @@ public class CacheLocalKeysTracker {
 
     private int getPartition(String key) {
         return affinity.partition(key);
+    }
+
+    private List<Integer> getLocalPartitions() {
+        ClusterNode localNode = ignite.cluster().localNode();
+        int[] nodes = affinity.allPartitions(localNode);
+        return Arrays.stream(nodes).boxed().collect(Collectors.toList());
     }
 }

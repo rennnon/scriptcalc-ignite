@@ -12,8 +12,11 @@ import org.apache.ignite.events.EventType;
 import org.apache.ignite.lang.IgnitePredicate;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-public class ServerSpring {
+import java.util.Timer;
+import java.util.TimerTask;
 
+public class ServerSpring {
+    private final static long LOCAL_KEYS_CHECK_INTERVAL_MILLIS = 5000;
 
     public static void main(String[] args) throws IgniteException {
         System.setProperty("spring.profiles.active", "server");
@@ -23,7 +26,14 @@ public class ServerSpring {
         Utils.printNodeStats(ignite, System.out);
 
         setupEventListeners(ignite);
-        CacheLocalKeysTracker.start(ignite, Cache.DISTRIBUTED);
+        CacheLocalKeysTracker tracker = CacheLocalKeysTracker.start(ignite, Cache.DISTRIBUTED);
+        Timer localKeysCheck = new Timer("localKeysCheck");
+        localKeysCheck.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Local keys: " + tracker.getLocalKeysSnapshot());
+            }
+        }, 0, LOCAL_KEYS_CHECK_INTERVAL_MILLIS);
     }
 
 
