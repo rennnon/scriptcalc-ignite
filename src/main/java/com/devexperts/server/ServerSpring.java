@@ -24,6 +24,7 @@ public class ServerSpring {
                 new AnnotationConfigApplicationContext(IgniteConfig.class);
         Ignite ignite = context.getBean(Ignite.class);
         Utils.printNodeStats(ignite, System.out);
+        Cli.start(ignite);
 
         setupEventListeners(ignite);
         CacheLocalKeysTracker tracker = CacheLocalKeysTracker.start(ignite, CacheInfo.DISTRIBUTED);
