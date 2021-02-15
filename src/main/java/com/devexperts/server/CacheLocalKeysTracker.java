@@ -49,6 +49,10 @@ public class CacheLocalKeysTracker {
                 .collect(Collectors.toSet());
     }
 
+    public CacheInfo getTrackedCacheInfo() {
+        return cacheInfo;
+    }
+
     private synchronized void startCacheListener() {
         ContinuousQueryWithTransformer<String, Heartbeat, CacheTrackerEvent> query =
                 new ContinuousQueryWithTransformer<>();

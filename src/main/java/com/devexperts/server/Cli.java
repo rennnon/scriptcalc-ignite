@@ -19,22 +19,23 @@ public class Cli {
     private final Terminal terminal;
     private final CommandLine commandLine;
 
-    private Cli(Ignite ignite) {
+    private Cli(Ignite ignite, CacheLocalKeysTracker tracker) {
         terminal = new Terminal();
         terminal.setInputListener(this::executeCommand);
 
         String nodeId = ignite.cluster().localNode().consistentId().toString();
         Window window = new Window(nodeId, "Server node has been started.\nType \"help\" for commands list.",
-                new CliAction("info", () -> new PrintNodeInfo(terminal, ignite).run()));
+                new CliAction("info", () -> new PrintNodeInfo(terminal, ignite).run()),
+                new CliAction("keys", () -> new PrintLocalKeys(terminal, tracker).run()));
         terminal.setWindow(window);
 
-        commandLine = new CommandLine(new RootCommand(), new CommandsFactory(terminal, ignite));
+        commandLine = new CommandLine(new RootCommand(), new CommandsFactory(terminal, ignite, tracker));
         commandLine.setOut(new PrintWriter(terminal));
         commandLine.setErr(new PrintWriter(terminal));
     }
 
-    public static void start(Ignite ignite) {
-        new Cli(ignite);
+    public static void start(Ignite ignite, CacheLocalKeysTracker tracker) {
+        new Cli(ignite, tracker);
     }
 
     private void executeCommand(String command) {
@@ -66,10 +67,12 @@ public class Cli {
         private final CommandLine.IFactory fallback = CommandLine.defaultFactory();
         private final Terminal terminal;
         private final Ignite ignite;
+        private final CacheLocalKeysTracker tracker;
 
-        public CommandsFactory(Terminal terminal, Ignite ignite) {
+        public CommandsFactory(Terminal terminal, Ignite ignite, CacheLocalKeysTracker tracker) {
             this.terminal = terminal;
             this.ignite = ignite;
+            this.tracker = tracker;
         }
 
         @SuppressWarnings("unchecked")
@@ -77,6 +80,8 @@ public class Cli {
         public <K> K create(Class<K> cls) throws Exception {
             if (cls == PrintNodeInfo.class) {
                 return (K) new PrintNodeInfo(terminal, ignite);
+            } else if (cls == PrintLocalKeys.class) {
+                return (K) new PrintLocalKeys(terminal, tracker);
             }
             return fallback.create(cls);
         }
@@ -85,7 +90,7 @@ public class Cli {
     @CommandLine.Command(
             name = "",
             description = "Simple commands for ignite cluster",
-            subcommands = {PrintNodeInfo.class, CommandLine.HelpCommand.class})
+            subcommands = {PrintNodeInfo.class, PrintLocalKeys.class, CommandLine.HelpCommand.class})
     private static class RootCommand implements Runnable {
         @Override
         public void run() {
@@ -107,6 +112,24 @@ public class Cli {
         @Override
         public void run() {
             Utils.printNodeStats(ignite, new PrintStream(terminal));
+        }
+    }
+
+    @CommandLine.Command(name = "keys",
+            description = "List of all cache keys which are local for the current node")
+    private static class PrintLocalKeys implements Runnable {
+        private final Terminal terminal;
+        private final CacheLocalKeysTracker tracker;
+
+        private PrintLocalKeys(Terminal terminal, CacheLocalKeysTracker tracker) {
+            this.terminal = terminal;
+            this.tracker = tracker;
+        }
+
+        @Override
+        public void run() {
+            terminal.append("Local keys for \"" + tracker.getTrackedCacheInfo().name() + "\" cache: ");
+            terminal.append(tracker.getLocalKeysSnapshot().toString());
             terminal.append(System.lineSeparator());
         }
     }

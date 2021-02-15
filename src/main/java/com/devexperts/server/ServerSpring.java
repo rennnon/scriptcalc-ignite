@@ -24,7 +24,6 @@ public class ServerSpring {
                 new AnnotationConfigApplicationContext(IgniteConfig.class);
         Ignite ignite = context.getBean(Ignite.class);
         Utils.printNodeStats(ignite, System.out);
-        Cli.start(ignite);
 
         setupEventListeners(ignite);
         CacheLocalKeysTracker tracker = CacheLocalKeysTracker.start(ignite, CacheInfo.DISTRIBUTED);
@@ -35,6 +34,8 @@ public class ServerSpring {
                 System.out.println("Local keys: " + tracker.getLocalKeysSnapshot());
             }
         }, 0, LOCAL_KEYS_CHECK_INTERVAL_MILLIS);
+
+        Cli.start(ignite, tracker);
     }
 
 
